@@ -15,7 +15,7 @@ const squareStyle = {
   'justifyContent': 'center',
   'alignItems': 'center',
   'fontSize': '20px',
-  'color': 'white'
+  'color': '#333'
 }
 
 const boardStyle: React.CSSProperties = {
@@ -41,7 +41,7 @@ const instructionsStyle = {
   'fontSize': '16px',
 }
 
-const buttonStyle = {
+const buttonStyle: React.CSSProperties = {
   'marginTop': '15px',
   'marginBottom': '16px',
   'width': '80px',
@@ -51,36 +51,81 @@ const buttonStyle = {
   'fontSize': '16px',
 }
 
-function Square() {
+function Square({ value, onSquareClick }: { value: number | string | null, onSquareClick: () => void }) {
   return (
     <div
       className="square"
-      style={squareStyle}>
+      style={squareStyle}
+      onClick={onSquareClick}
+    >
+      {value}
     </div>
   );
 }
 
 function Board() {
+  const [squares, setSquares] = useState<number[] | string[] | null[]>(Array(9).fill(null))
+  const [xIsNext, setXIsNext] = useState(true)
+
+  const calculateWinner = (squares: number[] | string[] | null[]) => {
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ]
+
+    for (const [a, b, c] of lines) {
+      if (squares[a] && squares[a] === squares[b] && squares[b] === squares[c]) {
+        return squares[a]
+      }
+    }
+
+    return null
+  }
+
+  const winner = calculateWinner(squares)
+
+  const handleClick = (i: number) => {
+    if (squares[i] || winner) return
+
+    const nextSquares = squares.slice()
+    nextSquares[i] = xIsNext ? 'X' : 'O'
+    setSquares(nextSquares)
+    setXIsNext(!xIsNext)
+  }
+
+  const nextPlayer = xIsNext ? 'X' : 'O'
+
+  const handleReset = () => {
+    setXIsNext(true)
+    setSquares(Array(9).fill(null))
+  }
+
   return (
     <div style={containerStyle} className="gameBoard">
-      <div id="statusArea" className="status" style={instructionsStyle}>Next player: <span>X</span></div>
-      <div id="winnerArea" className="winner" style={instructionsStyle}>Winner: <span>None</span></div>
-      <button style={buttonStyle}>Reset</button>
+      {!winner && <div id="statusArea" className="status" style={instructionsStyle}>Next player: <span>{nextPlayer}</span></div>}
+      {winner && <div id="winnerArea" className="winner" style={instructionsStyle}>Winner: <span>{winner}</span></div>}
+      <button style={buttonStyle} onClick={handleReset}>Reset</button>
       <div style={boardStyle}>
         <div className="board-row" style={rowStyle}>
-          <Square />
-          <Square />
-          <Square />
+          <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+          <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
+          <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
         </div>
         <div className="board-row" style={rowStyle}>
-          <Square />
-          <Square />
-          <Square />
+          <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
+          <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
+          <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
         </div>
         <div className="board-row" style={rowStyle}>
-          <Square />
-          <Square />
-          <Square />
+          <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
+          <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
+          <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
         </div>
       </div>
     </div>
